@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>失物主页 | Miss&Found</title>
+    <meta name="description" content="查看遗失之物的旅行朋友圈与聊天记录。" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body.item-page {
+        --profile-grad-a: #a5b4e8;
+        --profile-grad-b: #6b7aab;
+      }
+
+      .item-layout {
+        min-height: 100vh;
+        padding: 20px 14px 130px;
+      }
+
+      .item-content {
+        width: min(640px, 100%);
+        margin: 0 auto;
+      }
+
+      .item-profile {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 8;
+        width: min(520px, calc(100% - 32px));
+        max-width: 520px;
+        padding: 16px 16px 16px 52px;
+        border-radius: var(--radius-card);
+        border: 1px solid var(--color-border);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.1));
+        backdrop-filter: blur(var(--blur-strength));
+        -webkit-backdrop-filter: blur(var(--blur-strength));
+        box-shadow: var(--shadow-soft);
+      }
+
+      .item-profile__menu {
+        position: absolute;
+        right: 12px;
+        top: 12px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(8px);
+        color: inherit;
+        cursor: pointer;
+        letter-spacing: 0.1em;
+        transition: background var(--transition-fast);
+      }
+
+      .item-profile__menu:hover {
+        background: rgba(255, 255, 255, 0.22);
+      }
+
+      .item-profile__back {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(8px);
+        color: inherit;
+        display: grid;
+        place-items: center;
+        text-decoration: none;
+        transition: background var(--transition-fast);
+      }
+
+      .item-profile__back:hover {
+        background: rgba(255, 255, 255, 0.22);
+      }
+
+      .item-profile__inner {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .item-profile__avatar {
+        width: 72px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        flex: none;
+        margin: 0;
+      }
+
+      .item-profile__avatar.silhouette {
+        animation: none;
+      }
+
+      .item-profile__name {
+        margin: 0;
+        font-family: var(--font-family-title);
+        font-weight: 400;
+        font-size: 1.15rem;
+        letter-spacing: 0.08em;
+      }
+
+      .item-profile__sign,
+      .item-profile__days {
+        margin: 4px 0 0;
+        font-size: 0.86rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+      }
+
+      .item-main {
+        margin-top: 170px;
+        min-height: 70vh;
+      }
+
+      .panel {
+        display: none;
+      }
+
+      .panel.is-active {
+        display: block;
+      }
+
+      .timeline-refresh {
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: 0.82rem;
+        font-weight: 300;
+        letter-spacing: 0.06em;
+        margin-bottom: 12px;
+        min-height: 20px;
+      }
+
+      .timeline-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .post-card {
+        width: 100%;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.08));
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 14px;
+        overflow: hidden;
+      }
+
+      .post-card__image {
+        position: relative;
+        border-radius: 16px;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: linear-gradient(140deg, rgba(165, 180, 232, 0.45), rgba(240, 184, 212, 0.42));
+        margin-bottom: 12px;
+      }
+
+      .post-card__img-el {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.82;
+      }
+
+      .post-card__landmark {
+        position: absolute;
+        left: 12px;
+        bottom: 10px;
+        font-size: 0.84rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        text-shadow: var(--text-glow);
+      }
+
+      .post-card__silhouette {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.58), transparent 35%),
+          radial-gradient(circle at 64% 72%, rgba(196, 181, 216, 0.85), rgba(74, 85, 120, 0.75));
+        box-shadow: 0 0 18px rgba(196, 181, 216, 0.35);
+      }
+
+      .post-card__silhouette--pair {
+        right: 60px;
+      }
+
+      .post-card__body {
+        margin: 0 0 12px;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        line-height: 1.85;
+      }
+
+      .post-card__meta {
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        color: var(--color-text-secondary);
+      }
+
+      .panel {
+        display: none;
+      }
+
+      .panel.is-active {
+        display: block;
+      }
+
+      .timeline-refresh {
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: 0.82rem;
+        margin-bottom: 12px;
+        min-height: 20px;
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .post-card__landmark {
+        position: absolute;
+        left: 12px;
+        bottom: 10px;
+        font-size: 0.84rem;
+        text-shadow: var(--text-glow);
+      }
+
+      .post-card__fav {
+        border: 0;
+        border-radius: 999px;
+        padding: 5px 10px;
+        background: rgba(255, 255, 255, 0.12);
+        color: inherit;
+        cursor: pointer;
+        transition:
+          scale var(--transition-fast),
+          background var(--transition-fast);
+      }
+
+      .post-card__fav:active,
+      .post-card__fav.is-pressed {
+        scale: 0.94;
+      }
+
+      .post-card__fav.is-faved {
+        background: rgba(240, 184, 212, 0.28);
+      }
+
+      .post-card__fav-icon {
+        display: inline-block;
+        margin-right: 4px;
+        color: rgba(245, 240, 255, 0.88);
+        transition:
+          color var(--transition-fast),
+          scale var(--transition-fast);
+      }
+
+      .post-card__fav.is-faved .post-card__fav-icon {
+        color: var(--color-healing-pink);
+      }
+
+      .post-card__fav.is-bounce .post-card__fav-icon {
+        animation: fav-bounce 0.6s ease-in-out;
+      }
+
+      @keyframes fav-bounce {
+        0% { scale: 1; }
+        40% { scale: 1.15; }
+        100% { scale: 1; }
+      }
+
+      .soft-toast {
+        position: fixed;
+        right: 16px;
+        top: 16px;
+        z-index: 20;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        background: rgba(74, 85, 120, 0.78);
+        backdrop-filter: blur(14px);
+        color: var(--color-text-primary);
+        font-size: 0.84rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        opacity: 0;
+        translate: 0 -8px;
+        pointer-events: none;
+        transition:
+          opacity var(--transition-fast),
+          translate var(--transition-fast);
+      }
+
+      .soft-toast.is-show {
+        opacity: 1;
+        translate: 0 0;
+      }
+
+      .encounter-flag {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        background: rgba(74, 85, 120, 0.55);
+        backdrop-filter: blur(6px);
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 0.72rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+      }
+
+      .chat-panel-wrap {
+        width: 100%;
+        max-width: 520px;
+        margin: 0 auto;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 16px;
+        min-height: 360px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+        overflow-y: auto;
+        max-height: 55vh;
+        padding: 4px 2px;
+      }
+
+      .chat-msg {
+        max-width: 82%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 0.9rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        line-height: 1.75;
+        word-break: break-word;
+      }
+
+      .chat-msg--bot {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(8px);
+        border-bottom-left-radius: 6px;
+      }
+
+      .chat-msg--user {
+        align-self: flex-end;
+        background: rgba(196, 181, 216, 0.32);
+        backdrop-filter: blur(8px);
+        border-bottom-right-radius: 6px;
+      }
+
+      .chat-empty {
+        margin: auto;
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: 0.88rem;
+        letter-spacing: 0.06em;
+        line-height: 1.8;
+      }
+
+      .item-dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9;
+        padding: 10px 12px 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(74, 85, 120, 0.65);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+
+      .item-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .item-tab {
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        padding: 6px 16px;
+        color: inherit;
+        font-weight: 300;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+      }
+
+      .item-tab.is-active {
+        background: rgba(196, 181, 216, 0.32);
+      }
+
+      .chat-input-wrap {
+        display: flex;
+        gap: 10px;
+      }
+
+      .chat-input-wrap[hidden] {
+        display: none;
+      }
+
+      .chat-input {
+        flex: 1;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(8px);
+        color: inherit;
+        padding: 11px 14px;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+      }
+
+      .chat-input--disabled,
+      .chat-input:disabled {
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(232, 224, 248, 0.55);
+        border-color: rgba(255, 255, 255, 0.14);
+        cursor: not-allowed;
+      }
+
+      .item-dock,
+      .chat-input-wrap {
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+      }
+
+      .panel-hint {
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: 0.82rem;
+        font-weight: 300;
+        letter-spacing: 0.06em;
+      }
+
+      .item-error {
+        margin-top: 190px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body class="item-page">
+    <div class="page-photo-bg" style="background-image: url('images/bg-deer-forest.png')" aria-hidden="true"></div>
+    <div class="dream-bg" aria-hidden="true">
+      <div class="dream-bg__clouds"></div>
+      <div class="dream-bg__layer dream-bg__layer--a"></div>
+      <div class="dream-bg__layer dream-bg__layer--b"></div>
+      <div class="dream-bg__layer dream-bg__layer--c"></div>
+      <div class="dream-bg__grain"></div>
+    </div>
+
+    <main class="item-layout" data-parallax-root>
+      <header id="item-profile" class="item-profile">
+        <a class="item-profile__back" href="./museum.html" aria-label="返回博物馆">←</a>
+        <button id="profile-menu-btn" class="item-profile__menu" type="button" aria-label="更多操作">···</button>
+        <div class="item-profile__inner">
+          <div id="profile-avatar" class="item-profile__avatar silhouette" aria-hidden="true"></div>
+          <div>
+            <h1 id="profile-name" class="item-profile__name title"></h1>
+            <p id="profile-sign" class="item-profile__sign"></p>
+            <p id="profile-days" class="item-profile__days"></p>
+          </div>
+        </div>
+      </header>
+
+      <section id="item-main" class="item-main page-container">
+        <div id="timeline-panel" class="panel is-active">
+          <div id="timeline-refresh" class="timeline-refresh">下拉可刷新动态</div>
+          <div id="timeline-list" class="timeline-list"></div>
+        </div>
+        <div id="chat-panel" class="panel">
+          <div class="chat-panel-wrap">
+            <div id="chat-list" class="chat-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="item-dock">
+      <div class="item-tabs">
+        <button class="item-tab is-active" data-tab="timeline" type="button">朋友圈</button>
+        <button class="item-tab" data-tab="chat" type="button">聊天</button>
+      </div>
+      <div id="timeline-hint" class="panel-hint">切到聊天，和它说说今天的心情。</div>
+      <form id="chat-form" class="chat-input-wrap" hidden>
+        <label class="sr-only" for="chat-input">输入消息</label>
+        <input id="chat-input" class="chat-input" maxlength="120" placeholder="输入想说的话..." />
+        <button class="btn" type="submit">发送</button>
+      </form>
+    </footer>
+    <div id="fav-toast" class="soft-toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="js/item.js"></script>
+  </body>
+</html>

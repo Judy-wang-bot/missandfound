@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Miss&Found 失物旅舍 | 记忆封存入口</title>
+    <meta
+      name="description"
+      content="在 Miss&Found 失物旅舍，为遗失的物品、宠物与思念的人开启一段温柔旅行。"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .entry-hero {
+        text-align: center;
+        margin-bottom: 28px;
+      }
+
+      .entry-title {
+        font-size: clamp(1.8rem, 5vw, 3rem);
+        letter-spacing: 0.12em;
+        line-height: 1.45;
+      }
+
+      .entry-subtitle {
+        margin: 16px auto 0;
+        max-width: 36ch;
+        line-height: 1.65;
+      }
+
+      .entry-form-card {
+        padding: clamp(22px, 3vw, 28px);
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+      }
+
+      .entry-media-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: start;
+        margin-bottom: 18px;
+      }
+
+      .field-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .field-head label {
+        margin-bottom: 0;
+      }
+
+      .field-counter {
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+      }
+
+      .field-counter.is-limit {
+        color: #d88aa8;
+      }
+
+      .entry-submit {
+        margin-top: 8px;
+        display: flex;
+        justify-content: center;
+      }
+
+      #entry-feedback {
+        margin: 14px 0 0;
+        min-height: 1.5em;
+        text-align: center;
+      }
+
+      @media (max-width: 620px) {
+        .entry-media-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-photo-bg" style="background-image: url('images/bg-swing-flowers.png')" aria-hidden="true"></div>
+    <div class="dream-bg" aria-hidden="true">
+      <div class="dream-bg__clouds"></div>
+      <div class="dream-bg__layer dream-bg__layer--a"></div>
+      <div class="dream-bg__layer dream-bg__layer--b"></div>
+      <div class="dream-bg__layer dream-bg__layer--c"></div>
+      <div class="dream-bg__grain"></div>
+    </div>
+
+    <main class="page-shell" data-parallax-root>
+      <div class="page-container">
+        <header class="entry-hero parallax-layer" data-parallax-depth="1.2">
+          <h1 id="entry-title" class="title entry-title shake shake--delay-1">Miss&Found 失物旅舍</h1>
+          <p class="subtitle entry-subtitle">你写下遗失之物的名字，它会带着你的想念在世界旅行。</p>
+        </header>
+
+        <section class="entry-form-card card-standard glass-card parallax-layer" data-parallax-depth="1" aria-labelledby="entry-title">
+          <form id="entry-form" novalidate>
+            <div class="field">
+              <label for="item-name">给它取个名字</label>
+              <input id="item-name" name="name" maxlength="40" placeholder="例如：英语笔记本 / 奶油 " required />
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="item-description">物品描述</label>
+                <p id="desc-counter" class="field-counter" aria-live="polite">0 / 200</p>
+              </div>
+              <textarea
+                id="item-description"
+                name="description"
+                rows="3"
+                maxlength="200"
+                placeholder="描述一下它吧：封面有小狗贴纸，里面记满歪歪扭扭的单词…"
+                required
+              ></textarea>
+            </div>
+
+            <div class="entry-media-row">
+              <div class="field" style="margin-bottom: 0">
+                <div class="field-head">
+                  <label for="item-message">想对它说的话（选填）</label>
+                  <p id="msg-counter" class="field-counter" aria-live="polite">0 / 100</p>
+                </div>
+                <textarea
+                  id="item-message"
+                  name="message"
+                  rows="2"
+                  maxlength="100"
+                  placeholder="想对它说的一句话，比如'对不起，我把你弄丢了'"
+                ></textarea>
+              </div>
+
+              <div class="avatar-upload" aria-label="上传物品照片">
+                <input id="avatar-file" class="sr-only" type="file" accept="image/*" />
+                <div id="avatar-preview" class="avatar-upload__preview silhouette" aria-hidden="true"></div>
+                <button id="avatar-pick-btn" class="avatar-upload__btn" type="button" aria-label="选择照片">+</button>
+                <div class="avatar-upload__actions">
+                  <button id="avatar-remove-btn" class="btn btn--tiny" type="button" hidden>移除</button>
+                </div>
+                <p id="avatar-hint" class="avatar-upload__hint">上传照片或保留剪影</p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="item-personality">旅伴性格</label>
+              <select id="item-personality" name="personality">
+                <option value="quiet">安静</option>
+                <option value="playful">调皮</option>
+                <option value="gentle" selected>温柔</option>
+                <option value="longing">活泼</option>
+                <option value="longing">其他</option>
+              </select>
+            </div>
+
+            <div class="entry-submit">
+              <button id="start-trip-btn" class="btn shake shake--delay-3" type="button">送它出发</button>
+            </div>
+          </form>
+          <p id="entry-feedback" class="subtitle text-body" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </main>
+
+    <script type="module">
+      import { bootstrapItems, addItem } from "./js/storage.js";
+      import { initPageEffects } from "./js/effects.js";
+      import { compressImage, applyAvatarToElement } from "./js/avatar.js";
+      import { inferSilhouetteKind, silhouetteStyleForKind, silhouetteLabelForKind } from "./js/silhouette.js";
+
+      bootstrapItems();
+      initPageEffects();
+
+      const feedback = document.getElementById("entry-feedback");
+      const form = document.getElementById("entry-form");
+      const startTripBtn = document.getElementById("start-trip-btn");
+      const avatarFileEl = document.getElementById("avatar-file");
+      const avatarPreviewEl = document.getElementById("avatar-preview");
+      const avatarPickBtn = document.getElementById("avatar-pick-btn");
+      const avatarRemoveBtn = document.getElementById("avatar-remove-btn");
+      const avatarHintEl = document.getElementById("avatar-hint");
+      const descriptionEl = document.getElementById("item-description");
+      const messageEl = document.getElementById("item-message");
+      const descCounterEl = document.getElementById("desc-counter");
+      const msgCounterEl = document.getElementById("msg-counter");
+
+      let avatarImage = "";
+      let previewSeed = Math.floor(Math.random() * 1000);
+
+      const bindCounter = (inputEl, counterEl, max) => {
+        const update = () => {
+          const len = inputEl.value.length;
+          counterEl.textContent = `${len} / ${max}`;
+          counterEl.classList.toggle("is-limit", len >= max);
+        };
+        inputEl.addEventListener("input", update);
+        update();
+      };
+
+      bindCounter(descriptionEl, descCounterEl, 200);
+      bindCounter(messageEl, msgCounterEl, 100);
+
+      const renderPreview = () => {
+        if (avatarImage) {
+          avatarPreviewEl.hidden = false;
+          avatarPickBtn.hidden = true;
+          applyAvatarToElement(avatarPreviewEl, { avatarImage, name: "预览" });
+          avatarRemoveBtn.hidden = false;
+          avatarHintEl.textContent = "已使用上传的照片";
+          return;
+        }
+
+        const description = descriptionEl.value.trim();
+        if (description) {
+          const kind = inferSilhouetteKind(description);
+          avatarPreviewEl.hidden = false;
+          avatarPickBtn.hidden = false;
+          avatarPreviewEl.classList.remove("has-avatar-img");
+          avatarPreviewEl.innerHTML = "";
+          avatarPreviewEl.style.background = silhouetteStyleForKind(kind, previewSeed);
+          avatarRemoveBtn.hidden = true;
+          avatarHintEl.textContent = silhouetteLabelForKind(kind);
+          return;
+        }
+
+        avatarPreviewEl.hidden = true;
+        avatarPickBtn.hidden = false;
+        avatarRemoveBtn.hidden = true;
+        avatarHintEl.textContent = "上传照片或保留剪影";
+      };
+
+      avatarPickBtn.addEventListener("click", () => avatarFileEl.click());
+
+      avatarFileEl.addEventListener("change", async () => {
+        const file = avatarFileEl.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+          feedback.textContent = "请选择图片文件。";
+          return;
+        }
+        try {
+          avatarImage = await compressImage(file, 300, 0.7);
+          renderPreview();
+          feedback.textContent = "";
+        } catch (error) {
+          console.error(error);
+          feedback.textContent = "图片处理失败，请换一张试试。";
+        }
+        avatarFileEl.value = "";
+      });
+
+      avatarRemoveBtn.addEventListener("click", () => {
+        avatarImage = "";
+        renderPreview();
+      });
+
+      descriptionEl.addEventListener("input", renderPreview);
+      renderPreview();
+
+      const startTrip = () => {
+        const formData = new FormData(form);
+        const name = String(formData.get("name") || "").trim();
+        const description = String(formData.get("description") || "").trim();
+        const message = String(formData.get("message") || "").trim();
+        const personality = String(formData.get("personality") || "gentle");
+
+        if (!name) {
+          feedback.textContent = "请先给它取个名字，旅程才能开始。";
+          return;
+        }
+        if (!description) {
+          feedback.textContent = "请描述一下它，这样旅程才会更真实。";
+          return;
+        }
+
+        try {
+          const silhouetteKind = inferSilhouetteKind(description);
+          const created = addItem({
+            name,
+            description,
+            message,
+            personality,
+            title: name,
+            avatarImage,
+            avatarSeed: previewSeed,
+            silhouetteKind
+          });
+
+          if (!created?.id) throw new Error("addItem 未返回有效对象");
+          window.location.href = "./museum.html";
+        } catch (error) {
+          console.error("[Miss&Found] 出发失败:", error);
+          feedback.textContent = "出发失败了，请稍后再试。";
+        }
+      };
+
+      startTripBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        startTrip();
+      });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        startTrip();
+      });
+    </script>
+  </body>
+</html>
