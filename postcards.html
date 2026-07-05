@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的珍藏·明信片墙 | Miss&Found</title>
+    <meta name="description" content="查看并导出 Miss&Found 旅途中的珍藏明信片。" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .postcards-page {
+        min-height: 100vh;
+        padding-bottom: 120px;
+      }
+
+      .postcards-topbar {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .postcards-topbar__icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .postcards-topbar__title-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .postcards-title {
+        margin: 0;
+        font-size: clamp(1.2rem, 3.5vw, 1.75rem);
+        letter-spacing: 0.08em;
+        line-height: 1.5;
+        white-space: nowrap;
+      }
+
+      .postcards-topbar__spacer {
+        width: 72px;
+      }
+
+      .postcard {
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: linear-gradient(155deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: var(--shadow-soft);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity var(--transition-medium), transform var(--transition-medium), box-shadow var(--transition-medium);
+        cursor: zoom-in;
+      }
+
+      .postcard.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .postcard:hover {
+        box-shadow: var(--shadow-soft), var(--shadow-glow);
+      }
+
+      .postcard__img {
+        border-radius: 14px;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        margin-bottom: 14px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(140deg, rgba(165, 180, 232, 0.5), rgba(240, 184, 212, 0.45));
+      }
+
+      .postcard__img-el {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .postcard__landmark {
+        position: absolute;
+        left: 10px;
+        bottom: 10px;
+        max-width: calc(100% - 20px);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        line-height: 1.4;
+        background: rgba(74, 85, 120, 0.72);
+        backdrop-filter: blur(6px);
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .postcard__text {
+        margin: 0 0 12px;
+        font-family: var(--font-family-title);
+        font-size: 0.95rem;
+      }
+
+      .postcard__meta {
+        margin: 0;
+        display: grid;
+        gap: 4px;
+        font-size: 0.8rem;
+        color: var(--color-text-secondary);
+      }
+
+      .empty-state {
+        margin-top: 16vh;
+        text-align: center;
+        color: var(--color-text-secondary);
+        line-height: 1.65;
+      }
+
+      .empty-state__doodle {
+        margin: 0 auto 14px;
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+        color: var(--color-lilac);
+      }
+
+      .postcards-actions {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9;
+        padding: 12px 16px;
+        background: rgba(74, 85, 120, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        display: grid;
+        gap: 10px;
+        max-width: 520px;
+        margin: 0 auto;
+      }
+
+      .postcards-back {
+        color: var(--color-text-secondary);
+        text-align: center;
+        text-decoration: none;
+        line-height: 1.5;
+      }
+
+      .preview-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        background: rgba(74, 85, 120, 0.72);
+        backdrop-filter: blur(12px);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+
+      .preview-mask[hidden] {
+        display: none;
+      }
+
+      .preview-card {
+        width: min(520px, 100%);
+      }
+
+      .preview-card .postcard {
+        opacity: 1;
+        transform: none;
+        cursor: default;
+      }
+
+      .soft-tip {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 30;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(74, 85, 120, 0.85);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        font-size: 0.84rem;
+        opacity: 0;
+        translate: 0 -8px;
+        transition: opacity var(--transition-fast), translate var(--transition-fast);
+        pointer-events: none;
+      }
+
+      .soft-tip.is-show {
+        opacity: 1;
+        translate: 0 0;
+      }
+
+      @media (max-width: 640px) {
+        .postcards-topbar__spacer {
+          width: 0;
+        }
+
+        .postcards-title {
+          white-space: normal;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-photo-bg" style="background-image: url('images/bg-cloud-stars.png')" aria-hidden="true"></div>
+    <div class="dream-bg" aria-hidden="true">
+      <div class="dream-bg__clouds"></div>
+      <div class="dream-bg__layer dream-bg__layer--a"></div>
+      <div class="dream-bg__layer dream-bg__layer--b"></div>
+      <div class="dream-bg__layer dream-bg__layer--c"></div>
+      <div class="dream-bg__grain"></div>
+    </div>
+
+    <main class="postcards-page page-container" data-parallax-root>
+      <header class="postcards-topbar">
+        <a class="btn" href="./museum.html" aria-label="返回博物馆">← 返回</a>
+        <div class="postcards-topbar__title-wrap">
+          <img class="postcards-topbar__icon" src="images/icon-postcard-envelope.png" alt="" aria-hidden="true" />
+          <h1 class="postcards-title title">我的珍藏·明信片墙</h1>
+        </div>
+        <span class="postcards-topbar__spacer" aria-hidden="true"></span>
+      </header>
+
+      <section id="wall-wrap">
+        <div id="postcards-wall" class="postcards-wall" hidden></div>
+        <div id="empty-state" class="empty-state" hidden>
+          <div class="empty-state__doodle" aria-hidden="true">✦</div>
+          <p class="text-body">还没有珍藏的记忆，去旅途中收集吧。</p>
+        </div>
+      </section>
+    </main>
+
+    <div class="postcards-actions card-standard">
+      <button id="export-all-btn" class="btn" type="button">生成我的收藏长图</button>
+      <a class="postcards-back" href="./museum.html">回到博物馆</a>
+    </div>
+
+    <div id="preview-mask" class="preview-mask" hidden>
+      <div id="preview-card" class="preview-card"></div>
+    </div>
+
+    <div id="soft-tip" class="soft-tip" role="status" aria-live="polite"></div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script type="module" src="./js/postcards.js"></script>
+  </body>
+</html>

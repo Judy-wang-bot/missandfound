@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>遗失之物博物馆 | Miss&Found</title>
+    <meta name="description" content="遗失之物博物馆：它们都在好好生活。" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body.museum-page {
+        background: var(--bg-image-main);
+      }
+
+      .museum {
+        width: 100%;
+      }
+
+      .museum.glass-card--wide {
+        max-width: 800px;
+      }
+
+      .museum__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 28px;
+      }
+
+      .museum__title {
+        margin: 0;
+        font-family: var(--font-family-title);
+        font-weight: 300;
+        font-size: clamp(1.3rem, 2.8vw, 2.1rem);
+        letter-spacing: 0.1em;
+        line-height: 1.5;
+      }
+
+      .stamp-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        padding: 4px;
+        position: relative;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .stamp-btn__icon {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+      }
+
+      .stamp-btn__dot {
+        position: absolute;
+        right: 10px;
+        top: 9px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--color-healing-pink);
+        box-shadow: 0 0 14px rgba(240, 184, 212, 0.7);
+      }
+
+      .museum__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+      }
+
+      .item-card {
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.08)
+        );
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 18px;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(14px);
+        transition:
+          transform var(--transition-medium),
+          box-shadow var(--transition-medium),
+          border-color var(--transition-fast),
+          opacity var(--transition-medium);
+      }
+
+      .item-card.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .item-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.38);
+        box-shadow: var(--shadow-soft), var(--shadow-glow);
+      }
+
+      .item-card__avatar {
+        width: 54px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        margin-bottom: 12px;
+        background:
+          radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.58), transparent 35%),
+          radial-gradient(circle at 64% 72%, rgba(196, 181, 216, 0.72), rgba(74, 85, 120, 0.7));
+        box-shadow:
+          0 0 18px rgba(196, 181, 216, 0.35),
+          inset 0 0 14px rgba(255, 255, 255, 0.18);
+      }
+
+      .item-card__name {
+        margin: 0 0 10px;
+        font-family: var(--font-family-title);
+        font-weight: 400;
+        font-size: 1.05rem;
+        letter-spacing: 0.06em;
+        text-shadow: var(--text-glow);
+      }
+
+      .item-card__status {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.84rem;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        color: var(--color-text-secondary);
+      }
+
+      .item-card__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(196, 181, 216, 0.5);
+      }
+
+      .item-card__dot--traveling {
+        background: rgba(168, 220, 200, 0.85);
+        box-shadow: 0 0 0 rgba(168, 220, 200, 0.4);
+        animation: pulse-dot 3s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0% { box-shadow: 0 0 0 0 rgba(168, 220, 200, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(168, 220, 200, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(168, 220, 200, 0); }
+      }
+
+      .museum__empty {
+        margin: 40px 0 16px;
+        text-align: center;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.06em;
+        line-height: 2;
+      }
+
+      .fab-plus {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        font-size: 1.8rem;
+        line-height: 1;
+        box-shadow: var(--shadow-glow);
+      }
+
+      .context-menu {
+        position: fixed;
+        z-index: 12;
+        min-width: 130px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        background: rgba(74, 85, 120, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding: 8px;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .context-menu__btn {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--color-text-primary);
+        text-align: left;
+        padding: 10px 12px;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 300;
+        letter-spacing: 0.04em;
+        transition: background var(--transition-fast);
+      }
+
+      .context-menu__btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .context-menu[hidden] {
+        display: none;
+      }
+
+      @media (max-width: 640px) {
+        .museum__grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .item-card {
+          padding: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body class="museum-page">
+    <div class="page-photo-bg" style="background-image: url('images/bg-cloud-stars.png')" aria-hidden="true"></div>
+    <div class="dream-bg" aria-hidden="true">
+      <div class="dream-bg__clouds"></div>
+      <div class="dream-bg__layer dream-bg__layer--a"></div>
+      <div class="dream-bg__layer dream-bg__layer--b"></div>
+      <div class="dream-bg__layer dream-bg__layer--c"></div>
+      <div class="dream-bg__grain"></div>
+    </div>
+
+    <main class="page-shell" data-parallax-root>
+      <div class="page-container">
+      <section class="museum glass-card glass-card--wide parallax-layer" data-parallax-depth="1" aria-labelledby="museum-title">
+        <header class="museum__header">
+          <h1 id="museum-title" class="museum__title title shake shake--delay-1 parallax-layer" data-parallax-depth="1.2">
+            遗失之物博物馆·它们都在好好生活
+          </h1>
+
+          <a class="btn stamp-btn shake shake--delay-2 parallax-layer" data-parallax-depth="1.4" href="./postcards.html" aria-label="进入明信片墙">
+            <img class="stamp-btn__icon" src="images/icon-postcard-envelope.png" alt="" aria-hidden="true" />
+            <span id="unread-dot" class="stamp-btn__dot" hidden></span>
+          </a>
+        </header>
+
+        <div id="museum-grid" class="museum__grid" role="list"></div>
+        <p id="museum-empty" class="museum__empty" hidden>
+          旅舍还很安静，先去
+          <a class="btn" href="./home.html">首页送一个遗失之物去旅行</a>
+        </p>
+      </section>
+      </div>
+    </main>
+
+    <a class="btn fab-plus shake shake--delay-3" href="./home.html" aria-label="送新的物品去旅行">+</a>
+
+    <div id="context-menu" class="context-menu" hidden>
+      <button id="end-trip-btn" class="context-menu__btn" type="button">结束旅程</button>
+    </div>
+
+    <script type="module" src="js/museum.js"></script>
+  </body>
+</html>
